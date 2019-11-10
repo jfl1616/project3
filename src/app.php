@@ -32,11 +32,12 @@ $routes->addAjax(new Route('{token}/register', array(
 /*********************************
  * ACTIVATION / RESEND TOKENS
  **********************************/
-$routes->add("Activation/activation", new Route("activation/{username}/{token}", array(
-    '_controller' =>'\Bolzen\Src\Controller\Activation\ActivationController::activate'
+$routes->add("Activation/activation", new Route("activation/{token}", array(
+    '_controller' =>'\Bolzen\Src\Controller\Activation\ActivationController::activate',
+    'token'=>'default'
 )));
 
-$routes->addAjax(new Route("{token}/{username}/{userToken}/resend", array(
+$routes->addAjax(new Route("{token}/resend", array(
     '_controller' =>'\Bolzen\Src\Controller\Activation\ActivationController::resend'
 )));
 
@@ -45,6 +46,10 @@ $routes->addAjax(new Route("{token}/{username}/{userToken}/resend", array(
  **********************************/
 $routes->add("Lobby/lobby", new Route("{token}/lobby",array(
     '_controller' => '\Bolzen\Src\Controller\Lobby\LobbyController::lobby'
+)));
+
+$routes->addControllerOnly(new Route("index", array(
+    '_controller' => '\Bolzen\Src\Controller\Lobby\LobbyController::redirectToLobby'
 )));
 
 //bro, it dont work lkke that.. you likterally have plenty of exampsles in app.php

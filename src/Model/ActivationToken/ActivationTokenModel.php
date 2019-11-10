@@ -37,7 +37,7 @@ class ActivationTokenModel extends Model
 
         $duration = $duration->format('Y-m-d H:i:s');
         $column = "username,token,duration";
-        $this->token = $this->accessControl->generateRandomToken();
+        $this->token = hash('sha256', $username . $this->accessControl->generateRandomToken());
         $bindings=array($username, $this->token, $duration);
 
         if(!$this->database->insert($this->table, $column, $bindings)){
@@ -54,7 +54,7 @@ class ActivationTokenModel extends Model
         }
         //Create an email to send the user to activate the account.
         $subject = "Activate your account";
-        $link = $this->accessControl->getPath(). "activation/" . $username."/". $this->getToken();
+        $link = $this->accessControl->getPath(). "activation/" . $this->getToken();
 
         $template = $twig->loadTemplate("Email/activationEmail.php");
         $message = $template->render(array("url"=>$link, "name"=>$firstName));
@@ -106,21 +106,14 @@ class ActivationTokenModel extends Model
         return true;
     }
 
-    public function activate(string $username, $token):bool{
+    public function activate(string $token):bool{
         if(!$this->hasToken($token)){
             return false;
         }
-        if(!$this->user->hasUser($username)){
-            $this->setError("Invalid username");
-            return false;
-        }
-        if(!$this->isUserTokenValid($username, $token)){
-            return false;
-        }
 
-        $where = "username = ? AND token = ?";
-        $bindings =  array($username, $token);
-        $tokenRecord = $this->database->select($this->table, "duration", $where, $bindings);
+        $where = "token = ?";
+        $bindings =  array($token);
+        $tokenRecord = $this->database->select($this->table, "duration, username", $where, $bindings);
         $tokenRecord = $tokenRecord->fetch();
         $duration = new \DateTime($tokenRecord['duration']);
         $current = new \DateTime();
@@ -136,7 +129,7 @@ class ActivationTokenModel extends Model
         }
 
         // go ahead to update User table activated = true? correct
-        if(!$this->user->makeAccountVerified($username)){
+        if(!$this->user->makeAccountVerified($tokenRecord['username'])){
             $this->setError("Unable to update the activated value at this time.");
             return false;
         }

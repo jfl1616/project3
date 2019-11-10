@@ -5,6 +5,7 @@ namespace Bolzen\Src\Model\Account;
 
 
 use Bolzen\Core\Model\Model;
+use Bolzen\Src\Model\Lobby\LobbyModel;
 use Bolzen\Src\Model\Profile\ProfileModel;
 use Twig\Profiler\Profile;
 
@@ -17,6 +18,11 @@ class AccountModel extends Model
         parent::__construct();
         $this->table = "account";
         $this->profileModel = new ProfileModel();
+    }
+
+    public function getCSRFToken()
+    {
+        return $this->accessControl->getCSRFToken();
     }
 
     public function add(string $username, string $password):bool {
@@ -57,9 +63,24 @@ class AccountModel extends Model
         }
         return true;
     }
+    public function checkPermission(){
+        if($this->user->isAnonymous()){
+            $this->logout();
+        }
+    }
+    public function logout(){
+        $this->session->clear();
+        $this->accessControl->redirect("login");
+    }
 
     public function redirectToLobby()
     {
-        $this->accessControl->redirect('lobby');
+        $lobby = new LobbyModel();
+        $lobby->redirectToLobbyWithToken();
+    }
+    public function redirectToActivationPage(){
+        if(!$this->user->isVerified()){
+            $this->accessControl->redirect('activation');
+        }
     }
 }

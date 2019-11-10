@@ -78,7 +78,7 @@
                     // let link = "{{url('lobby')}}";
                     // alert(link);
                     // return ;
-                    location.href = "{{url(getToken())}}/lobby";
+                    location.href = obj.url;
                 }
             }
         });

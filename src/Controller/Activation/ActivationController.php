@@ -20,18 +20,17 @@ class ActivationController extends Controller
     }
 
     public function activate(Request $request){
-        $username = $request->get("username", '');
         $token = $request->get("token", '');
 
-        if (!$this->activationTokenModel->activate($username, $token)) {
+        if ($token=="default") {
+            $content['error'] = "Please activate your account";
+        }
+        elseif (!$this->activationTokenModel->activate($token)) {
             if ($this->activationTokenModel->hasError()) {
                 $content['error'] = $this->activationTokenModel->errorToString();
             } else {
                 $content['error'] = "An unknown error prevented us from continue";
             }
-
-            $content['username'] = $username;
-            $content['userToken'] = $token;
         } else {
             //otherwise the activation was success so we will just redirect to lobby
             $acc = new AccountModel();
