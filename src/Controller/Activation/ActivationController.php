@@ -7,10 +7,15 @@ namespace Bolzen\Src\Controller\Activation;
 use Bolzen\Core\Controller\Controller;
 use Bolzen\Src\Model\Account\AccountModel;
 use Bolzen\Src\Model\ActivationToken\ActivationTokenModel;
+use Bolzen\Src\Traits\AuthenticationTrait;
+use Bolzen\Src\Traits\ResponseTrait;
 use Symfony\Component\HttpFoundation\Request;
 
 class ActivationController extends Controller
 {
+    use ResponseTrait;
+    use AuthenticationTrait;
+
     private $activationTokenModel;
 
     public function __construct()
@@ -36,19 +41,29 @@ class ActivationController extends Controller
             $acc = new AccountModel();
             $acc->redirectToLobby();
         }
+
         return $this->render($request, $content);
     }
     public function resend(Request $request){
-        $username = $request->get('username', '');
-        $token = $request->get('userToken', '');
+        $this->CSRFProtection($request);
+        $email = $request->get("email", "");
+        $reCAPTCHA = $request->get("g-recaptcha-response", "");
 
-        //call resend here
-        if(!$this->activationTokenModel->resend($username, $token, $this->twig )){
-            $response = array("status"=>400, "msg"=> $this->activationTokenModel->errorToString());
+        if(!$this->activationTokenModel->resend($reCAPTCHA, $email, $this->twig)){
+            $this->setResponse($this->activationTokenModel->errorToString());
         }
         else{
-            $response = array("status"=>200, "msg"=> "We sent you an activation code. Check your email and click on the link to verify");
+            $this->setResponse("We sent you an activation code. Check your email and click on the link to verify.", 200);
         }
-        return $this->jsonResponse($response);
+
+//        //call resend here
+//        if(!$this->activationTokenModel->resend($username, $token, $this->twig )){
+//            $this->setResponse($this->activationTokenModel->errorToString());
+//        }
+//        else{
+//            $this->setResponse("We sent you an activation code. Check your email and click on the link to verify.", 200);
+//        }
+        //$this->setResponse("The email address is " . $email, 200);
+        return $this->jsonResponse($this->response);
     }
 }

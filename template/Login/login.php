@@ -70,7 +70,7 @@
                         </div>
                     </div>
                     <div class="p-t-15">
-                        <button class="btn btn--radius-2 btn--blue" type="submit" name="btnCreate">Register</button>
+                        <button class="btn btn--radius-2 btn--blue" type="submit">Register</button>
                         <p class="message">Already registered? <a class="login text-blue-700" href="#">Sign In</a></p>
                     </div>
                 </form>
@@ -92,7 +92,7 @@
                     </div>
                     <div class="p-t-15">
                         <p class="message"><a class ="text-blue-700" href="reset.php">Forget Password?</a></p>
-                        <button class="btn btn--radius-2 btn--blue" type="submit" name="btnLogin">Login</button>
+                        <button class="btn btn--radius-2 btn--blue" type="submit">Login</button>
                         <p class="message">Not registered? <a class="register text-blue-700" href="#">Create an account</a></p>
                     </div>
                 </form>

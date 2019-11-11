@@ -68,14 +68,36 @@ class ActivationTokenModel extends Model
 
     }
 
-    public function resend(string $username, string $token, \Twig_Environment $twig)
-    {
-        if(!$this->hasToken($token)){
+    public function resend(string $reCAPTCHA, string $email, \Twig_Environment $twig): bool{
+        $secretKey = "6Lco-MEUAAAAAKXTp1dj_tPeiOck0mfSqGPDi0va";
+
+        // Verify the reCAPTCHA response
+        if(!empty($recaptcha)){
+            $this->setError("Please check on the reCAPTCHA box.");
             return false;
         }
-        if(!$this->isUserTokenValid($username, $token)){
+
+        // Verify the reCAPTCHA response
+        $verifyResponse = file_get_contents('https://www.google.com/recaptcha/api/siteverify?secret=' . $secretKey.
+            '&response='.$_POST['g-recaptcha-response']);
+
+        // Decode json data
+        $responseData = json_decode($verifyResponse);
+
+        // If reCAPTCHA response is valid
+        if(!$responseData->success){
+            $this->setError("Robot vertification failed, please try again.");
             return false;
         }
+
+        if(!$this->profileModel->hasEmail($email)){
+            $this->setError("The email address you entered does not exist in our system.");
+            return false;
+        }
+
+        $username = $this->profileModel->getUsername($email);
+        $firstName = $this->profileModel->getFirstName($username);
+        $token = $this->getToken($username);
 
         //Remove the token
         if(!$this->deleteToken($token)){
@@ -90,9 +112,6 @@ class ActivationTokenModel extends Model
         if(!$this->add($username, $duration)){
             return false;
         }
-
-        $email = $this->profileModel->getEmail($username);
-        $firstName = $this->profileModel->getFirstName($username);
 
         if(!$this->send($email, $username, $firstName, $twig)){
             return false;
@@ -128,7 +147,6 @@ class ActivationTokenModel extends Model
             return false;
         }
 
-        // go ahead to update User table activated = true? correct
         if(!$this->user->makeAccountVerified($tokenRecord['username'])){
             $this->setError("Unable to update the activated value at this time.");
             return false;
@@ -141,7 +159,21 @@ class ActivationTokenModel extends Model
         return true;
     }
 
-    public function getToken(){
+    public function getToken($username=""){
+        if(!empty($this->token)){
+            return $this->token;
+        }
+        else{
+            $where = "username=?";
+            $bindings = array($username);
+            $columns = "token";
+            $result = $this->database->select($this->table, $columns, $where, $bindings);
+            if($result->rowCount() === 0) return "";
+            else{
+                $result = $result->fetch();
+                $this->token = $result["token"];
+            }
+        }
         return $this->token;
     }
 
@@ -154,7 +186,6 @@ class ActivationTokenModel extends Model
         }
         return true;
     }
-
     public function deleteToken($token){
         if(!$this->hasToken($token)){
             return false;
@@ -163,17 +194,6 @@ class ActivationTokenModel extends Model
         $bindings=array($token);
         if(!$this->database->delete($this->table, $where, $bindings)){
             $this->setError("Unable to delete token.");
-            return false;
-        }
-        return true;
-    }
-
-    public function isUserTokenValid(string $username, $token){
-        $where = "username = ? AND token = ?";
-        $bindings =  array($username, $token);
-        $tokenRecord = $this->database->select($this->table, "username, token", $where, $bindings);
-        if($tokenRecord->rowCount() === 0){
-            $this->setError("Username and token does not exist.");
             return false;
         }
         return true;

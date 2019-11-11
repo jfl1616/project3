@@ -55,7 +55,6 @@ class ProfileModel extends Model
         }
         return false;
     }
-
     public function getEmail(string $username):string
     {
         $result = $this->get($username);
@@ -66,6 +65,22 @@ class ProfileModel extends Model
     {
         $result = $this->get($username);
         return empty($result) ? "": $result['firstname'];
+    }
+
+    public function getUsername(string $email):string{
+        if(empty($email)){
+            $this->setError("email cannot be empty");
+            return "";
+        }
+        $columns = "username";
+        $where = "email = ?";
+        $bindings = array($email);
+        $result = $this->database->select($this->table, $columns, $where, $bindings);
+        if($result->rowCount() === 0) return "";
+        else{
+            $result = $result->fetch();
+            return $result["username"];
+        }
     }
 
     public function get(string $username):array

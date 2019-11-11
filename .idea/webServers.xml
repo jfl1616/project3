@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="WebServers">
+    <option name="servers">
+      <webServer id="39968a47-9caf-4662-8df4-21da444fedf3" name="joseflopezjr.com" url="http://joseflopezjr.com">
+        <fileTransfer host="joseflopezjr.com" port="22" rootFolder="/home/joseflopezjr/www/JoseFLopezJr_v3/portfolio/project3" accessType="SFTP">
+          <advancedOptions>
+            <advancedOptions dataProtectionLevel="Private" passiveMode="true" shareSSLContext="true" />
+          </advancedOptions>
+          <option name="port" value="22" />
+        </fileTransfer>
+      </webServer>
+    </option>
+  </component>
+</project>
