@@ -20,9 +20,12 @@ class AccountModel extends Model
         $this->profileModel = new ProfileModel();
     }
 
-    public function getCSRFToken()
-    {
+    public function getCSRFToken(): string{
         return $this->accessControl->getCSRFToken();
+    }
+
+    public function getUsername(): string {
+        return $this->user->getUserName();
     }
 
     public function add(string $username, string $password):bool {
@@ -65,7 +68,7 @@ class AccountModel extends Model
     }
     public function checkPermission(){
         if($this->user->isAnonymous()){
-            $this->logout();
+                $this->logout();
         }
     }
     public function logout(){

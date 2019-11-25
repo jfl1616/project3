@@ -61,10 +61,13 @@ class ProfileModel extends Model
         return empty($result) ? "" : $result['email'];
     }
 
-    public function getFirstName(string $username)
-    {
+    public function getFirstName(string $username):string{
         $result = $this->get($username);
         return empty($result) ? "": $result['firstname'];
+    }
+    public function getLastName(string $username):string{
+        $result = $this->get($username);
+        return empty($result) ? "": $result['lastname'];
     }
 
     public function getUsername(string $email):string{
@@ -83,8 +86,7 @@ class ProfileModel extends Model
         }
     }
 
-    public function get(string $username):array
-    {
+    public function get(string $username):array{
         if (empty($username)) {
             $this->setError("username cannot be empty");
             return array();
@@ -97,5 +99,11 @@ class ProfileModel extends Model
 
         return $result->rowCount() === 0 ? array() : $result->fetch();
 
+    }
+
+    public function listUser():array {
+        $column = "username, firstname, lastname";
+        $result = $this->database->select($this->table, $column);
+        return $result->rowCount() === 0 ? array() : $result->fetchAll();
     }
 }

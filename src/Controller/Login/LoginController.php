@@ -7,6 +7,7 @@ namespace Bolzen\Src\Controller\Login;
 use Bolzen\Core\Controller\Controller;
 use Bolzen\Src\Model\Account\AccountModel;
 use Bolzen\Src\Model\Lobby\LobbyModel;
+use Bolzen\Src\Model\UserLastActivity\UserLastActivityModel;
 use Bolzen\Src\Traits\AuthenticationTrait;
 use Bolzen\Src\Traits\ResponseTrait;
 use Symfony\Component\HttpFoundation\Request;
@@ -16,12 +17,13 @@ class LoginController extends Controller
     use ResponseTrait;
     use AuthenticationTrait;
 
-    private $accountModel;
+    private $accountModel, $userLastActivity;
 
     public function __construct()
     {
         parent::__construct();
         $this->accountModel = new AccountModel();
+        $this->userLastActivity = new UserLastActivityModel();
     }
 
 
@@ -37,10 +39,14 @@ class LoginController extends Controller
                 $this->setResponse($this->accountModel->errorToString());
             }
             else{
-                $this->setResponse("Successfully", 200);
-                $lobby = new LobbyModel();
-                $this->response['url'] = $lobby->lobbyPath();
-
+                if(!$this->userLastActivity->updateActivity($username)){
+                    $this->setResponse($this->userLastActivity->errorToString());
+                }
+                else{
+                    $this->setResponse("Successfully", 200);
+                    $lobby = new LobbyModel();
+                    $this->response['url'] = $lobby->lobbyPath();
+                }
             }
             return $this->jsonResponse($this->response);
         }

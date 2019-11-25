@@ -52,7 +52,22 @@ $routes->addControllerOnly(new Route("index", array(
     '_controller' => '\Bolzen\Src\Controller\Lobby\LobbyController::redirectToLobby'
 )));
 
-//bro, it dont work lkke that.. you likterally have plenty of exampsles in app.php
+$routes->addControllerOnly(new Route("{token}/stream", array(
+   '_controller' => '\Bolzen\Src\Controller\Lobby\LobbyController::stream'
+)));
+
+$routes->addControllerOnly(new Route("{token}/getOnlineUser", array(
+    '_controller' => '\Bolzen\Src\Controller\Lobby\LobbyController::getOnlineUser'
+)));
+$routes->addAjax(new Route("{token}/addMessage", array(
+    '_controller' => '\Bolzen\Src\Controller\Lobby\LobbyController::addMessage'
+)));
+
+$routes->addAjax(new Route("{token}/updateUserLastActivity", array(
+    '_controller' => '\Bolzen\Src\Controller\Lobby\LobbyController::updateUserLastActivity'
+)));
+
+
 
 ###############################
 # Do not modify below

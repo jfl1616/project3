@@ -17,8 +17,8 @@ trait AuthenticationTrait
     public function authenticatedUserOnly(Request $request){
         $this->CSRFProtection($request);
         $accountModel = new AccountModel();
-        $accountModel->redirectToActivationPage();
         $accountModel->checkPermission();
+        $accountModel->redirectToActivationPage();
 
     }
 }

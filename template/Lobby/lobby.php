@@ -92,7 +92,7 @@
             height: 55px;
         }
     }
-    #frame #sidepanel #profile .wrap img {
+    #frame #sidepanel #profile .wrap img, #profile .wrap svg {
         width: 50px;
         border-radius: 50%;
         padding: 3px;
@@ -111,16 +111,16 @@
             margin-left: 4px;
         }
     }
-    #frame #sidepanel #profile .wrap img.online {
+    #frame #sidepanel #profile .wrap img.online, #profile .wrap svg.online {
         border: 2px solid #2ecc71;
     }
-    #frame #sidepanel #profile .wrap img.away {
+    #frame #sidepanel #profile .wrap img.away, #profile .wrap svg.away {
         border: 2px solid #f1c40f;
     }
-    #frame #sidepanel #profile .wrap img.busy {
+    #frame #sidepanel #profile .wrap img.busy, #profile .wrap svg.busy {
         border: 2px solid #e74c3c;
     }
-    #frame #sidepanel #profile .wrap img.offline {
+    #frame #sidepanel #profile .wrap img.offline, #profile .wrap svg.offline {
         border: 2px solid #95a5a6;
     }
     #frame #sidepanel #profile .wrap p {
@@ -405,14 +405,14 @@
     #frame #sidepanel #contacts ul li.contact .wrap span.busy {
         background: #e74c3c;
     }
-    #frame #sidepanel #contacts ul li.contact .wrap img {
+    #frame #sidepanel #contacts ul li.contact .wrap img, #contacts ul li.contact .wrap svg {
         width: 40px;
         border-radius: 50%;
         float: left;
         margin-right: 10px;
     }
     @media screen and (max-width: 735px) {
-        #frame #sidepanel #contacts ul li.contact .wrap img {
+        #frame #sidepanel #contacts ul li.contact .wrap img, #contacts ul li.contact .wrap svg {
             margin-right: 0px;
         }
     }
@@ -576,14 +576,15 @@
     #frame .content .messages ul li:nth-last-child(1) {
         margin-bottom: 20px;
     }
-    #frame .content .messages ul li.sent img {
+    #frame .content .messages ul li.sent img, .messages ul li.sent svg {
+        float:left;
         margin: 6px 8px 0 0;
     }
     #frame .content .messages ul li.sent p {
         background: #435f7a;
         color: #f5f5f5;
     }
-    #frame .content .messages ul li.replies img {
+    #frame .content .messages ul li.replies img, .messages ul li.replies svg{
         float: right;
         margin: 6px 0 0 8px;
     }
@@ -676,13 +677,255 @@
 </style>
 {% endblock %}
 
+{% block js %}
+<script>
+    /**
+     * id - set the ID for SVG element
+     * class - set the class name for SVG element
+     * firstName: User's first name (String)
+     * lastName: User's last naem (String
+     * cx: SVG X-Axis coordinate of a center point
+     * cy: SVG Y-Axis coordinate of a center point
+     * x: SVG <text> X coordinate of the starting point of the text baseline.
+     * y: SVG <text> Y coordinate of the starting point of the text baseline.
+     */
+    function svgNameInitial(id, className, firstName, lastName, cx, cy, r, x, y, fontSize){
+         var initialName = firstName.slice(0,1).toUpperCase() + lastName.slice(0,1).toUpperCase();
+         svgHtml = "<svg id='" + id + "' width='45' height='45' class='" + className + "'><circle cx='" + cx + "' cy='" + cy + "' r='" + r + "' " +
+                 "fill='#aeaeae'/><text x='" + x + "%' y='" + y + "%' text-anchor='middle' fill='white'" +
+                 " font-size='" + fontSize + "px'" + " font-family='Arial' dy='.3em'>" + initialName +
+                 "</text>Sorry, your browser does not support inline SVG.</svg>";
+         return svgHtml;
+    }
+
+    function newMessage() {
+        message = $(".message-input input").val();
+        gameId = 1;
+
+        if($.trim(message) == '') {
+            return false;
+        }
+
+        $.ajax({
+            data: "message=" + message + "&gameId=" + gameId,
+            url: "{{url(getToken())}}/addMessage",
+            type: "POST",
+            success:(function(result){
+                let obj = JSON.parse(result);
+                if(obj.status === 400){
+                    $.toast({
+                        heading: 'Error',
+                        text: obj.msg,
+                        showHideTransition: 'fade',
+                        icon: 'error',
+                        position: 'top-center'
+                    });
+                }
+                else{
+                    $('.message-input input').val(null);
+                }
+            })
+        })
+    };
+
+    function updateUserLastActivity(){
+        $("*").bind('mousemove click mouseup mousedown keydown keypress keyup submit change mouseenter scroll resize dblclick', function(){
+            // Prevent calling of an event handler multiple times.
+            $("*").unbind('mousemove click mouseup mousedown keydown keypress keyup submit change mouseenter scroll resize dblclick');
+
+            // Call the function to bind the event handlers to the "cick" JavaScript event.
+            setClick();
+
+            // Call AJAX to update the timestamp in the database
+            $.ajax({
+               url: "{{url(getToken())}}/updateUserLastActivity",
+               type: "POST",
+               success: function(result){
+                   let obj = JSON.parse(result);
+
+                   if(obj.status !== 200){
+                       $.toast({
+                           heading: 'Error',
+                           text: obj.msg,
+                           showHideTransition: 'fade',
+                           icon: 'error',
+                           position: 'top-center'
+                       });
+                   }
+                   // Call this function every 60 seconds.
+                   setTimeout(updateUserLastActivity, 60000);
+               }
+            });
+        });
+    }
+
+    function setClick(){
+
+        $("#profile-img, #profile-svg").click(function() {
+            $("#status-options").toggleClass("active");
+        });
+
+        $(".expand-button").click(function() {
+            $("#profile").toggleClass("expanded");
+            $("#contacts").toggleClass("expanded");
+        });
+
+        $("#status-options ul li").click(function() {
+            $("#profile-img, #profile-svg").removeClass();
+            $("#status-online").removeClass("active");
+            $("#status-away").removeClass("active");
+            $("#status-busy").removeClass("active");
+            $("#status-offline").removeClass("active");
+            $(this).addClass("active");
+
+            if($("#status-online").hasClass("active")) {
+                $("#profile-img, #profile-svg").addClass("online");
+            } else if ($("#status-away, #profile-svg").hasClass("active")) {
+                $("#profile-img, #profile-svg").addClass("away");
+            } else if ($("#status-busy, #profile-svg").hasClass("active")) {
+                $("#profile-img, #profile-svg").addClass("busy");
+            } else if ($("#status-offline").hasClass("active")) {
+                $("#profile-img, #profile-svg").addClass("offline");
+            } else {
+                $("#profile-img, #profile-svg").removeClass();
+            };
+
+            $("#status-options").removeClass("active");
+        });
+
+
+        $('.submit').click(function(e) {
+            newMessage();
+        });
+
+        $("#contacts ul li").click(function() {
+            Swal.fire({
+                title: "Do you want to play against with " + $(this).find(".name").text() + "?",
+                type: 'info',
+                showCancelButton: true,
+                confirmButtonColor: '#3085d6',
+                cancelButtonColor: '#d33',
+                confirmButtonText: 'Yes, I am ready.',
+                allowOutsideClick: false,
+                allowEscapeKey: false,
+                preConfirm: (result)=>{
+                    $('.swal2-modal').pleaseWait();
+                }
+
+            })
+        });
+    }
+
+    // Handler for .ready() called.
+    $(function(){
+        //Customize the user's profile image
+        $("#profile .wrap").prepend(svgNameInitial("profile-svg", "online", "{{firstname}}", "{{lastname}}", 20, 20, 20, 50, 50, 20));
+
+        // Call the function to bind the event handlers to the "cick" JavaScript event.
+        setClick();
+
+        $(window).on('keydown', function(e) {
+            if (e.which == 13) {
+                newMessage();
+                return false;
+            }
+        });
+
+        var listMessage = new EventSource("{{url(getToken())}}/stream");
+        listMessage.onmessage = function(event){
+            data = $.parseJSON(event.data);
+
+            // Get all ID from <li>
+            let MSG_ID = $( ".messages ul li" )
+                .map(function() {
+                    return this.id;
+                })
+                .toArray();
+
+            var html = "";
+            $.each(data, function(i, item){
+                // Append the messages into the HTML as long as there is no duplicate timestamp ID
+                if(!($.inArray(data[i].timestamp, MSG_ID) >= 0)){
+                    // Check if the message comes from you, then set the class on it.
+                    if(data[i].username === "{{username}}") html+="<li id='" + data[i].timestamp + "'" + "class='replies'>";
+                    else html+="<li id='" + data[i].timestamp + "'" + "class='sent'>";
+
+                    html+= svgNameInitial("", "", data[i].firstname, data[i].lastname, 15, 15, 15, 35, 35, 15);
+                    html+= "<p><span class='font-black'>" + data[i].firstname + ": </span>" + data[i].message + "</p></li>";
+                }
+            });
+
+            // Do not append if html is empty
+            if(html.trim()){
+                //console.log(html);
+                $(html).appendTo(".messages ul");
+                $(".messages").animate({ scrollTop: $(document).height() }, "fast");
+            }
+        };
+
+        var onlineUser = new EventSource("{{url(getToken())}}/getOnlineUser");
+        onlineUser.onmessage = function(event) {
+            data = $.parseJSON(event.data);
+            // Get all registered and online users' ID from <li>
+            let USER_ID = $( "#contacts ul li" )
+                .map(function() {
+                    return this.id;
+                })
+                .toArray();
+
+            var html = "";
+            var users = [];
+            $.each(data, function(i, item){
+                //Add the user's ID to the array.
+                users.push(data[i].activitykey);
+
+                //Append the users into the HTML as long as there is no duplicate activitykey ID
+                if(!($.inArray(data[i].activitykey, USER_ID) >= 0)){
+                    html+="<li id='" + data[i].activitykey + "' class='contact'><div class='wrap'><span class='contact-status online'></span>";
+                    html+= svgNameInitial("", "", data[i].firstname, data[i].lastname, 20, 20, 20, 50, 50, 20);
+                    html+= "<div class='meta'><p class='name'>" + data[i].firstname + " " + data[i].lastname + "</p>"
+                    html+="<p class='preview'></p></div></div></li>";
+                }
+                else{
+                    //Check if there is any away status on the user, then change it to the online.
+                    var id = "#" +  data[i].activitykey + " .wrap span";
+                    if($(id).hasClass("contact-status away")){
+                        $(id).attr("class", "contact-status online");
+                    }
+                }
+            });
+
+            //Change the user's status (away) due to the inactivity
+            $.each(USER_ID, function(index, value){
+               if(!($.inArray(value, users) >= 0)){
+                   var id = "#" + value.toString() + " .wrap span";
+                   $(id).attr('class', 'contact-status away');
+               }
+            });
+
+            // // Do not append if html is empty
+            if(html.trim()){
+                setClick(); // Reset the setting especially #contacts swal.fire()
+                $(html).appendTo("#contacts ul");
+            }
+        };
+
+        updateUserLastActivity();
+
+    });
+
+
+
+
+</script>
+{% endblock %}
+
 {% block content %}
 <div id="frame">
     <div id="sidepanel">
         <div id="profile">
             <div class="wrap">
-                <img id="profile-img" src="http://emilcarlsson.se/assets/mikeross.png" class="online" alt="" />
-                <p>Mike Ross</p>
+                <p>{{firstname}} {{lastname}}</p>
                 <i class="fa fa-chevron-down expand-button" aria-hidden="true"></i>
                 <div id="status-options">
                     <ul>
@@ -708,106 +951,16 @@
         </div>
         <div id="contacts">
             <ul>
-                <li class="contact">
-                    <div class="wrap">
-                        <span class="contact-status online"></span>
-                        <img src="http://emilcarlsson.se/assets/louislitt.png" alt="" />
-                        <div class="meta">
-                            <p class="name">Louis Litt</p>
-                            <p class="preview">You just got LITT up, Mike.</p>
-                        </div>
-                    </div>
-                </li>
-                <li class="contact active">
-                    <div class="wrap">
-                        <span class="contact-status busy"></span>
-                        <img src="http://emilcarlsson.se/assets/harveyspecter.png" alt="" />
-                        <div class="meta">
-                            <p class="name">Harvey Specter</p>
-                            <p class="preview">Wrong. You take the gun, or you pull out a bigger one. Or, you call their bluff. Or, you do any one of a hundred and forty six other things.</p>
-                        </div>
-                    </div>
-                </li>
-                <li class="contact">
-                    <div class="wrap">
-                        <span class="contact-status away"></span>
-                        <img src="http://emilcarlsson.se/assets/rachelzane.png" alt="" />
-                        <div class="meta">
-                            <p class="name">Rachel Zane</p>
-                            <p class="preview">I was thinking that we could have chicken tonight, sounds good?</p>
-                        </div>
-                    </div>
-                </li>
-                <li class="contact">
-                    <div class="wrap">
-                        <span class="contact-status online"></span>
-                        <img src="http://emilcarlsson.se/assets/donnapaulsen.png" alt="" />
-                        <div class="meta">
-                            <p class="name">Donna Paulsen</p>
-                            <p class="preview">Mike, I know everything! I'm Donna..</p>
-                        </div>
-                    </div>
-                </li>
-                <li class="contact">
-                    <div class="wrap">
-                        <span class="contact-status busy"></span>
-                        <img src="http://emilcarlsson.se/assets/jessicapearson.png" alt="" />
-                        <div class="meta">
-                            <p class="name">Jessica Pearson</p>
-                            <p class="preview">Have you finished the draft on the Hinsenburg deal?</p>
-                        </div>
-                    </div>
-                </li>
-                <li class="contact">
-                    <div class="wrap">
-                        <span class="contact-status"></span>
-                        <img src="http://emilcarlsson.se/assets/haroldgunderson.png" alt="" />
-                        <div class="meta">
-                            <p class="name">Harold Gunderson</p>
-                            <p class="preview">Thanks Mike! :)</p>
-                        </div>
-                    </div>
-                </li>
-                <li class="contact">
-                    <div class="wrap">
-                        <span class="contact-status"></span>
-                        <img src="http://emilcarlsson.se/assets/danielhardman.png" alt="" />
-                        <div class="meta">
-                            <p class="name">Daniel Hardman</p>
-                            <p class="preview">We'll meet again, Mike. Tell Jessica I said 'Hi'.</p>
-                        </div>
-                    </div>
-                </li>
-                <li class="contact">
-                    <div class="wrap">
-                        <span class="contact-status busy"></span>
-                        <img src="http://emilcarlsson.se/assets/katrinabennett.png" alt="" />
-                        <div class="meta">
-                            <p class="name">Katrina Bennett</p>
-                            <p class="preview">I've sent you the files for the Garrett trial.</p>
-                        </div>
-                    </div>
-                </li>
-                <li class="contact">
-                    <div class="wrap">
-                        <span class="contact-status"></span>
-                        <img src="http://emilcarlsson.se/assets/charlesforstman.png" alt="" />
-                        <div class="meta">
-                            <p class="name">Charles Forstman</p>
-                            <p class="preview">Mike, this isn't over.</p>
-                        </div>
-                    </div>
-                </li>
-                <li class="contact">
-                    <div class="wrap">
-                        <span class="contact-status"></span>
-                        <img src="http://emilcarlsson.se/assets/jonathansidwell.png" alt="" />
-                        <div class="meta">
-                            <p class="name">Jonathan Sidwell</p>
-                            <p class="preview"><span>You:</span> That's bullshit. This deal is solid.</p>
-                        </div>
-                    </div>
-                </li>
+<!--                <li class="contact">-->
+<!--                    <div class="wrap">-->
+<!--                        <span class="contact-status away"></span>-->
+<!--                        <img src="http://emilcarlsson.se/assets/rachelzane.png" alt="" />-->
+<!--                        <div class="meta">-->
+<!--                            <p class="name">Rachel Zane</p>-->
+<!--                            <p class="preview">I was thinking that we could have chicken tonight, sounds good?</p>-->
+<!--                        </div>-->
+<!--                    </div>-->
+<!--                </li>-->
             </ul>
         </div>
         <div id="bottom-bar">
@@ -817,8 +970,8 @@
     </div>
     <div class="content">
         <div class="contact-profile">
-            <img src="http://emilcarlsson.se/assets/harveyspecter.png" alt="" />
-            <p>Harvey Specter</p>
+            <img src="https://www.shopbecker.com/globalassets/product-images/mb4430_1_.jpg" alt="" />
+            <p>Four Connect</p>
             <div class="social-media">
                 <i class="fa fa-facebook" aria-hidden="true"></i>
                 <i class="fa fa-twitter" aria-hidden="true"></i>
@@ -826,40 +979,7 @@
             </div>
         </div>
         <div class="messages">
-            <ul>
-                <li class="sent">
-                    <img src="http://emilcarlsson.se/assets/mikeross.png" alt="" />
-                    <p>How the hell am I supposed to get a jury to believe you when I am not even sure that I do?!</p>
-                </li>
-                <li class="replies">
-                    <img src="http://emilcarlsson.se/assets/harveyspecter.png" alt="" />
-                    <p>When you're backed against the wall, break the god damn thing down.</p>
-                </li>
-                <li class="replies">
-                    <img src="http://emilcarlsson.se/assets/harveyspecter.png" alt="" />
-                    <p>Excuses don't win championships.</p>
-                </li>
-                <li class="sent">
-                    <img src="http://emilcarlsson.se/assets/mikeross.png" alt="" />
-                    <p>Oh yeah, did Michael Jordan tell you that?</p>
-                </li>
-                <li class="replies">
-                    <img src="http://emilcarlsson.se/assets/harveyspecter.png" alt="" />
-                    <p>No, I told him that.</p>
-                </li>
-                <li class="replies">
-                    <img src="http://emilcarlsson.se/assets/harveyspecter.png" alt="" />
-                    <p>What are your choices when someone puts a gun to your head?</p>
-                </li>
-                <li class="sent">
-                    <img src="http://emilcarlsson.se/assets/mikeross.png" alt="" />
-                    <p>What are you talking about? You do what they say or they shoot you.</p>
-                </li>
-                <li class="replies">
-                    <img src="http://emilcarlsson.se/assets/harveyspecter.png" alt="" />
-                    <p>Wrong. You take the gun, or you pull out a bigger one. Or, you call their bluff. Or, you do any one of a hundred and forty six other things.</p>
-                </li>
-            </ul>
+            <ul></ul>
         </div>
         <div class="message-input">
             <div class="wrap">
