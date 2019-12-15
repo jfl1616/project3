@@ -24,6 +24,12 @@ class ActivationController extends Controller
         $this->activationTokenModel = new ActivationTokenModel();
     }
 
+    /*
+     * Validate the token through URL Get Parameter
+     * The account will be activate and redirect to the lobby page
+     * as long as token is valid; otherwise, render the error message
+     * and pass to the twig context.
+    */
     public function activate(Request $request){
         $token = $request->get("token", '');
 
@@ -37,13 +43,14 @@ class ActivationController extends Controller
                 $content['error'] = "An unknown error prevented us from continue";
             }
         } else {
-            //otherwise the activation was success so we will just redirect to lobby
             $acc = new AccountModel();
             $acc->redirectToLobby();
         }
-
         return $this->render($request, $content);
     }
+    /*
+     * Resend the email with the different token
+     */
     public function resend(Request $request){
         $this->CSRFProtection($request);
         $email = $request->get("email", "");
@@ -55,15 +62,6 @@ class ActivationController extends Controller
         else{
             $this->setResponse("We sent you an activation code. Check your email and click on the link to verify.", 200);
         }
-
-//        //call resend here
-//        if(!$this->activationTokenModel->resend($username, $token, $this->twig )){
-//            $this->setResponse($this->activationTokenModel->errorToString());
-//        }
-//        else{
-//            $this->setResponse("We sent you an activation code. Check your email and click on the link to verify.", 200);
-//        }
-        //$this->setResponse("The email address is " . $email, 200);
         return $this->jsonResponse($this->response);
     }
 }

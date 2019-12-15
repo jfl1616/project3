@@ -54,7 +54,7 @@ class UserLastActivityModel extends Model
             return false;
         }
         if(!$this->save()){
-            $this->setError("Unable able to save.");
+            $this->setError("Unable to save during updating the last activity.");
             return false;
         }
         return true;
@@ -93,6 +93,13 @@ class UserLastActivityModel extends Model
         return true;
     }
 
+    public function isTimestampValidate($username): bool{
+        $lastUserActivity = new \DateTime($this->getTimestamp($username));
+        $currentTime = new \DateTime();
+        $currentTime = $currentTime->modify("-5 minutes");
+        return $lastUserActivity > $currentTime ? true : false;
+    }
+
     public function getTimestamp(string $username): string{
         $result = $this->get($username);
         return empty($result) ? "" : $result['timestamp'];
@@ -101,6 +108,25 @@ class UserLastActivityModel extends Model
     public function getActivityKey(string $username): string{
         $result = $this->get($username);
         return empty($result) ? "" : $result["activitykey"];
+    }
+
+    public function getUsername(string $activitykey): string{
+        $result = $this->getUserLastActivityInfo($activitykey);
+        return empty($result) ? "" : $result["username"];
+    }
+
+    public function getUserLastActivityInfo(string $activitykey): array{
+        if(empty($activitykey)){
+            $this->setError("Activity key cannot be empty");
+            return array();
+        }
+        $columns = "*";
+        $where = "activitykey = ?";
+        $bindings = array($activitykey);
+
+        $result = $this->database->select($this->table, $columns, $where, $bindings);
+
+        return $result->rowCount() === 0 ? array() : $result->fetch();
     }
 
     public function get(string $username): array{

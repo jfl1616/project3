@@ -75,9 +75,6 @@
                     sweet("error", "Login - Oops", obj.msg);
                 }
                 else{
-                    // let link = "{{url('lobby')}}";
-                    // alert(link);
-                    // return ;
                     location.href = obj.url;
                 }
             }

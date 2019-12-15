@@ -6,6 +6,7 @@ namespace Bolzen\Src\Traits;
 
 use Bolzen\Src\Model\Account\AccountModel;
 use Bolzen\Src\Model\CSRF\CSRFModel;
+use Bolzen\Src\Model\Game\GameModel;
 use Symfony\Component\HttpFoundation\Request;
 
 trait AuthenticationTrait
@@ -20,5 +21,14 @@ trait AuthenticationTrait
         $accountModel->checkPermission();
         $accountModel->redirectToActivationPage();
 
+    }
+    public function GameIdProtection(Request $request){
+        $gameId = $request->get("gameId", "");
+        $gameModel = new GameModel();
+
+        if(!$gameModel->hasGameId($gameId)){
+            $accountModel = new AccountModel();
+            $accountModel->redirectToLobby();
+        }
     }
 }

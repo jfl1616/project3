@@ -23,6 +23,10 @@ class RegistrationController extends Controller
         $this->registrationModel = new RegistrationModel();
     }
 
+    /*
+     * Pass the required information to register() function in order to make an account, then it will send an email with an
+     * activation code that requires the user to verify the account.
+     */
     public function register(Request $request){
         $this->CSRFProtection($request);
 

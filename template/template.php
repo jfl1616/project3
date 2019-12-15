@@ -9,8 +9,8 @@
     <title>{% block title %} foo {% endblock %}</title>
 
     <!-- Icons font CSS-->
-    <link href="{{asset('css/material-design-iconic-font.min.css')}}" rel="stylesheet" media="all">
     <link rel='stylesheet prefetch' href='https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.6.2/css/font-awesome.min.css'>
+    <link href="{{asset('css/material-design-iconic-font.min.css')}}" rel="stylesheet" media="all">
 
     <!-- Font special for pages-->
     <link href="https://fonts.googleapis.com/css?family=Poppins:100,100i,200,200i,300,300i,400,400i,500,500i,600,600i,700,700i,800,800i,900,900i" rel="stylesheet">

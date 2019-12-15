@@ -26,7 +26,11 @@ class LoginController extends Controller
         $this->userLastActivity = new UserLastActivityModel();
     }
 
-
+    /*
+     * Render the template and display the login/registration page to the user when he/she requests
+     * access it; otherwise, the user attempts to log in. The user will be directed to the lobby page as long as
+     * the account is verified and the username and password are correct.
+     */
     public function login(Request $request){
 
         if($request->isMethod("POST")){
@@ -39,14 +43,9 @@ class LoginController extends Controller
                 $this->setResponse($this->accountModel->errorToString());
             }
             else{
-                if(!$this->userLastActivity->updateActivity($username)){
-                    $this->setResponse($this->userLastActivity->errorToString());
-                }
-                else{
                     $this->setResponse("Successfully", 200);
                     $lobby = new LobbyModel();
                     $this->response['url'] = $lobby->lobbyPath();
-                }
             }
             return $this->jsonResponse($this->response);
         }

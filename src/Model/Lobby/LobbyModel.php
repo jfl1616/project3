@@ -55,10 +55,7 @@ class LobbyModel extends Model
         //Retrieve an array from ProfileModel class and loop through all registered users.
         foreach($this->profileModel->listUser() as $item){
             // Insert into an array as long as user's timestamp is under 5 minutes and different user, instead of this user.
-            $lastUserActivity = new \DateTime($this->userLastActivityModel->getTimestamp($item["username"]));
-            $currentTime = new \DateTime();
-            $currentTime = $currentTime->modify("-5 minutes");
-            if($lastUserActivity > $currentTime && $this->user->getUserName() != $item["username"]){
+            if($this->userLastActivityModel->isTimestampValidate($item["username"]) && $this->user->getUserName() != $item["username"]){
                 $user[] = [
                     "username" => $item["username"],
                     "firstname" => $item["firstname"],
@@ -80,11 +77,7 @@ class LobbyModel extends Model
             while($rows = $result->fetch()){
 
                 // Insert into an array as long as user's timestamp is under 5 minutes.
-                $lastUserActivity = new \DateTime($this->userLastActivityModel->getTimestamp($rows["username"]));
-                $currentTime = new \DateTime();
-                $currentTime = $currentTime->modify("-5 minutes");
-
-                if($lastUserActivity > $currentTime){
+                if($this->userLastActivityModel->isTimestampValidate($rows["username"])){
                     $messages[] = [
                         'message' => $rows["message"],
                         'timestamp' => $rows["timestamp"],
