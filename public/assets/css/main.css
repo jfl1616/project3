@@ -603,3 +603,47 @@ input {
         padding: 50px 40px;
     }
 }
+
+/* ==========================================================================
+   #Unsupported Browser Page
+   ========================================================================== */
+div.unsupported {
+    display:none;
+    width: 100%;
+}
+.unsupported-browser {
+    background: #fff;
+    margin: 35px auto;
+    width: 100%;
+    box-shadow: 0 0 5px #cacace;
+    position: relative;
+    padding: 20px 30px;
+    text-align: left;
+}
+.unsupported-browser h1 {
+    font-size: 2em;
+    font-weight: 0;
+}
+.unsupported-browser h2 {
+    border: 0;
+}
+.unsupported-browser li {
+    margin-bottom: 5px;
+}
+.unsupported-browser li a {
+    color: inherit;
+}
+.unsupported-browser li a:hover, a {
+    color: #007bc3;
+}
+.unsupported hr{
+    margin-top: 50px;
+}
+.unsupported-message {
+    font-size: 0.9em;
+    margin-top: 40px;
+    margin-bottom: 30px;
+}
+.unsupported-message li {
+    margin-bottom: 5px;
+}

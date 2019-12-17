@@ -91,7 +91,7 @@
                         </div>
                     </div>
                     <div class="p-t-15">
-                        <p class="message"><a class ="text-blue-700" href="reset.php">Forget Password?</a></p>
+                        <p class="message"><a class ="text-blue-700" href="">Forget Password?</a></p>
                         <button class="btn btn--radius-2 btn--blue" type="submit">Login</button>
                         <p class="message">Not registered? <a class="register text-blue-700" href="#">Create an account</a></p>
                     </div>
@@ -100,5 +100,37 @@
         </div>
     </div>
 </div>
+<div class="unsupported bg-gra-02 p-t-130 p-b-100">
+    <div class="wrapper wrapper--w680">
+        <div class="container">
+            <div class="container-wrapper">
+                <div class="container-full-column">
+                    <div class="unsupported-browser">
+
+                        <h1>Please upgrade your browser in order to use HTML5 Server-Sent Events (SSE).</h1>
+                        <p>
+                            The Server-sent event is heavily using in this project when a web page automatically get updates from a server. It gives you a better experience with new functions. Unfortunately, your browser does not support this feature at this time. The more information can be be found at <a href="https://www.w3schools.com/html/html5_serversentevents.asp">HTML5 Server-Sent Events - W3Schools</a>.
+                        </p>
+                        <h2>Please download one of these free and up-to-date browsers:</h2>
+                        <ul>
+                            <li><a href="https://www.mozilla.com/firefox/" target="_blank">Firefox</a></li>
+                            <li><a href="https://www.google.com/chrome/browser/desktop/" target="_blank">Chrome</a></li>
+                            <li><a href="https://support.apple.com/downloads/safari" target="_blank">Safari</a></li>
+                            <li><a href="https://www.opera.com/" target="_blank">Opera</a></li>
+                        </ul>
+                        <hr>
+
+                        <div class="unsupported-message">
+                            <h3>I can't update my browser</h3>
+                            <ul>
+                                <li>Ask your system administrator to update your browser if you cannot install updates yourself.</li>
+                                <li>If you can't change your browser because of compatibility issues, think about installing a second browser for utilization of this site and keep the old one for compatibility.</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 
 {% endblock %}

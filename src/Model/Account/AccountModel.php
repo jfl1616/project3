@@ -87,7 +87,7 @@ class AccountModel extends Model
         return true;
     }
     /*
-     * Check if user is anonymous and will be directed to the login/registration page automatically.
+     * Check if user is anonymous and will be directed to the login/registration page by default.
      */
     public function checkPermission(){
         if($this->user->isAnonymous()){
@@ -95,7 +95,7 @@ class AccountModel extends Model
         }
     }
     /*
-     * Destory the session and redirect to the login page.
+     * Destroy the session and redirect to the login page.
      */
     public function logout(){
         $this->session->clear();

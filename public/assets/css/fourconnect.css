@@ -1,0 +1,131 @@
+body {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    background: #27ae60;
+    font-family: "proxima-nova", "Source Sans Pro", sans-serif;
+    font-size: 1em;
+    letter-spacing: 0.1px;
+    color: #32465a;
+    text-rendering: optimizeLegibility;
+    text-shadow: 1px 1px 1px rgba(0, 0, 0, 0.004);
+    -webkit-font-smoothing: antialiased;
+}
+#frame {
+    width: 100%;
+    min-width: 360px;
+    max-width: 1000px;
+    height: 28vh;
+    min-height: 0px;
+    max-height: 720px;
+    background: #E6EAEA;
+}
+#frame .content {
+    float: right;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    position: relative;
+}
+* {
+    border: 0;
+    padding: 0;
+}
+
+#game-board {
+    background: #0074B3;
+    width: 730px;
+    cursor: pointer;
+}
+
+.column {
+    width: 100px;
+    display: inline-block;
+}
+
+@media screen and (max-width: 800px){
+    #game-board {
+        width: 520px;
+    }
+    svg{
+        height: 8vh;
+    }
+    .column{
+        width: 70px;
+    }
+}
+
+@media screen and (max-width: 600px){
+    #game-board {
+        width: 427px;
+    }
+    svg{
+        height: 7vh;
+    }
+    .column{
+        width: 56px;
+    }
+}
+
+@media screen and (max-width: 505px){
+    #game-board {
+        width: 336px;
+    }
+    svg{
+        height: 5vh;
+    }
+    .column{
+        width: 44px;
+    }
+    #frame{
+        min-width:336px;
+    }
+}
+
+@media screen and (max-width: 445px){
+    #game-board {
+        width: 300px;
+    }
+    svg{
+        height: 4.5vh;
+    }
+    .column{
+        width: 38px;
+    }
+    #frame{
+        min-width:300px;
+    }
+}
+
+@media screen and (max-width: 360px){
+    #game-board {
+        width: 300px;
+    }
+    svg{
+        height: 4.5vh;
+    }
+    .column{
+        width: 38px;
+    }
+    #frame{
+        height: 40vh;
+        min-width:300px;
+    }
+}
+
+.column:hover  circle.free{
+    fill: #D5E4ED;
+}
+
+circle.free {
+    fill: #fff;
+}
+
+circle.red {
+    fill: #D50000;
+}
+
+circle.blue {
+    fill: #003fda;
+}

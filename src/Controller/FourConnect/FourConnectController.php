@@ -33,7 +33,7 @@ class FourConnectController extends Controller
     }
 
     /*
-     * Pass the String items to the twig context
+     * Render the string template that passes the strings to the twig context.
      */
     public function FourConnect(Request $request){
         $this->authenticatedUserOnly($request);
@@ -41,7 +41,7 @@ class FourConnectController extends Controller
 
         $content["username"] = $this->accountModel->getUsername();
         $content["gameId"] = $request->get("gameId");
-        $content["chipColor"] = $this->gameModel->getColor($this->accountModel->getUsername());
+        $content["chipColor"] = $this->gameModel->getColor($content["gameId"]);
 
         //Prevent the cheating when the user attempts to reload the page.
         if(!isset($_SESSION["reload"]) || $_SESSION["reload"] === false){
@@ -49,9 +49,16 @@ class FourConnectController extends Controller
         }
         else if($_SESSION["reload"] === true){
             $_SESSION['reload'] = false;
-            $winner = $this->gameModel->getChallengerUsername($content["username"]);
+            $winner = $this->gameModel->getChallengerUsername($content["gameId"]);
             $this->gameModel->updateWinner($winner, $content["gameId"]);
         }
+
+        //Enable the resetGame function that allows the user to make a request to reset the game.
+        if(!isset($_SESSION["resetGame"]) || $_SESSION["resetGame"] === false){
+            $this->gameModel->updateResetGame($content["gameId"]); /* Set the resetGame column to null */
+            $_SESSION["resetGame"] = true;
+        }
+
         return $this->render($request, $content);
     }
 
@@ -75,11 +82,31 @@ class FourConnectController extends Controller
         }
         return $this->jsonResponse($this->response);
     }
+    /*
+     * Pass the game id and opponent's username to requestedResetGame() function in Game Model class to
+     * insert the data into the database. It is useful to notify another player that opponent would like to
+     * reset the game.
+     */
+    public function requestedResetGame(Request $request){
+        $this->authenticatedUserOnly($request);
+        $this->GameIdProtection($request);
+
+        $gameId = $request->get("gameId");
+        $opponent = $this->gameModel->getChallengerUsername($gameId);
+
+        if(!$this->gameModel->updateResetGame($gameId, $opponent)){
+            $this->setResponse($this->gameModel->errorToString());
+        }
+        else{
+            $this->setResponse("The request has been sent!", 200);
+        }
+        return $this->jsonResponse($this->response);
+    }
 
     /*
      * Return the automatic updates from a server
-     * with a JSON that comes the information of
-     * username, location, and chip color.
+     * with a JSON object that comes the
+     * with information of username, location, and chip color.
      */
     public function playerMove(Request $request){
         $this->authenticatedUserOnly($request);
@@ -103,7 +130,8 @@ class FourConnectController extends Controller
 
     /*
      * Return the automatic updates from a server
-     * with a JSON that comes the result of the game.
+     * with a JSON object that comes
+     * with the result of the game.
      */
     public function gameStatus(Request $request){
         $this->authenticatedUserOnly($request);
@@ -153,6 +181,75 @@ class FourConnectController extends Controller
         }
         else{
             $this->setResponse("Successfully updating the result of game", 200);
+        }
+        return $this->jsonResponse($this->response);
+    }
+    /*
+     * Return the automatic updates from a server
+     * with a JSON object that comes with the
+     * incoming request for the reset game.
+     */
+    public function checkResetGame(Request $request){
+        $this->authenticatedUserOnly($request);
+        $this->GameIdProtection($request);
+
+        $resetGame = $this->gameModel->incomingResetGame($request->get("gameId"), $this->accountModel->getUsername());
+
+        $response = new StreamedResponse();
+
+        $response->setCallback(function() use ($resetGame){
+            echo 'data: ' . json_encode($resetGame) . "\n\n";
+            echo 'retry: 1000\n\n';
+            ob_flush();
+            flush();
+        });
+
+        $response->headers->set('Content-Type', 'text/event-stream');
+        $response->headers->set("X-Accel-Buffering", "no");
+        $response->headers->set('Cach-Control', 'no-cache');
+        return $response;
+    }
+    /*
+     * Return the automatic updates from a server
+     * with a JSON that comes the approval to start over
+     * the game.
+     */
+    public function reloadResetGame(Request $request){
+        $this->authenticatedUserOnly($request);
+        $this->GameIdProtection($request);
+
+        $resetGame = $this->gameModel->reload($request->get("gameId"));
+
+        $response = new StreamedResponse();
+
+        $response->setCallback(function() use ($resetGame){
+            echo 'data: ' . json_encode($resetGame) . "\n\n";
+            echo 'retry: 1000\n\n';
+            ob_flush();
+            flush();
+        });
+
+        $response->headers->set('Content-Type', 'text/event-stream');
+        $response->headers->set("X-Accel-Buffering", "no");
+        $response->headers->set('Cach-Control', 'no-cache');
+        return $response;
+    }
+    /*
+     * Pass the game id and response to the updateResetGame() function
+     * in Game Model to update the resetGame column in the database. This
+     * function has occurred when the opponent responds to another opponent's
+     * request to reset the game by approving or declining.
+     */
+    public function responseResetGame(Request $request){
+        $this->authenticatedUserOnly($request);
+        $response = $request->get("response");
+        $gameId = $request->get("gameId");
+
+        if(!$this->gameModel->updateResetGame($gameId, $response)){
+            $this->setResponse($this->gameModel->errorToString());
+        }
+        else{
+            $this->setResponse("Successfully updating the resetGame column.", 200);
         }
         return $this->jsonResponse($this->response);
     }

@@ -10,6 +10,9 @@
     /*********************************
      * SHOW ALL ONLINE USERS
      **********************************/
+
+    //Purpose: This page automatically gets updates from a server regarding
+    //the information of all online players.
     var onlineUser = new EventSource("{{url(getToken())}}/getOnlineUser");
     onlineUser.onmessage = function(event) {
         data = $.parseJSON(event.data);
@@ -42,7 +45,7 @@
             }
         });
 
-        //Change the user's status (away) due to the inactivity
+        //Change the user's status (away) due to the idle.
         $.each(USER_ID, function(index, value){
             if(!($.inArray(value, users) >= 0)){
                 var id = "#" + value.toString() + " .wrap span";
@@ -50,7 +53,7 @@
             }
         });
 
-        // // Do not append if html is empty
+        // Do not append if html is empty
         if(html.trim()){
             $(html).appendTo("#contacts ul");
             setClick(); // Reset the setting especially #contacts swal.fire()
@@ -60,7 +63,8 @@
     /*********************************
      * ACCEPT / REJECT BUTTON
      **********************************/
-    // Notify the user right away when the challenger has requested to play against with this user.
+
+    //Purpose: Notify the user right away when the challenger has requested to play against with this user.
     var incomingChallenge = new EventSource("{{url(getToken())}}/getIncomingChallenge");
     incomingChallenge.onmessage = function(event) {
         data = $.parseJSON(event.data);
@@ -120,7 +124,7 @@
     /*********************************
      * START GAME BUTTON
      **********************************/
-    // Notify the challenger and opponent, the game may begins.
+    //Purpose: Notify the challenger and opponent, the game may begins.
     var startGame = new EventSource("{{url(getToken())}}/startGame");
     startGame.onmessage = function(event) {
         data = $.parseJSON(event.data);

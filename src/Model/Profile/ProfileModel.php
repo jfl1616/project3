@@ -15,7 +15,9 @@ class ProfileModel extends Model
         parent::__construct();
         $this->table = "Profile";
     }
-
+    /*
+     * Insert the user's profile data into the Profile database.
+     */
     public function add(string $username, string $email, string $firstName, string $lastName, string $country):bool {
         $username = trim($username);
         $email = trim($email);
@@ -23,20 +25,20 @@ class ProfileModel extends Model
         $lastName = trim($lastName);
         $country = trim($country);
 
+        //All parameters cannot be empty or null.
         if(empty($username) || empty($email) || empty($firstName) || empty($lastName) || empty($country)){
             $this->setError("All parameters are required.");
             return false;
         }
-
+        //A valid email address is required.
         if(!filter_var($email, FILTER_VALIDATE_EMAIL)) {
             $this->setError("Please enter a valid email address");
             return false;
         }
-
-        //disable it for temporarily.
-//        if($this->hasEmail($email)){
-//            return false;
-//        }
+        //Duplicate email is not allowed.
+        if($this->hasEmail($email)){
+            return false;
+        }
 
         $columns = "username,email,firstname,lastname,country";
         $bindings = array($username, $email, $firstName, $lastName, $country);
@@ -46,6 +48,10 @@ class ProfileModel extends Model
         }
         return true;
     }
+    /*
+     * Return true if email is already existed in the database; otherwise,
+     * return false.
+     */
     public function hasEmail(string $email): bool{
         $where = "email = ?";
         $bindings = array($email);
@@ -55,21 +61,32 @@ class ProfileModel extends Model
         }
         return false;
     }
+    /*
+     * Return the user's email address.
+     */
     public function getEmail(string $username):string
     {
         $result = $this->get($username);
         return empty($result) ? "" : $result['email'];
     }
-
+    /*
+     * Return the user's first name
+     */
     public function getFirstName(string $username):string{
         $result = $this->get($username);
         return empty($result) ? "": $result['firstname'];
     }
+    /*
+     * Return the user's last name.
+     */
     public function getLastName(string $username):string{
         $result = $this->get($username);
         return empty($result) ? "": $result['lastname'];
     }
-
+    /*
+     * Return the user's username based on the email address
+     * if it has been found in the database.
+     */
     public function getUsername(string $email):string{
         if(empty($email)){
             $this->setError("email cannot be empty");
@@ -85,7 +102,9 @@ class ProfileModel extends Model
             return $result["username"];
         }
     }
-
+    /*
+     * Return an array with all columns.
+     */
     public function get(string $username):array{
         if (empty($username)) {
             $this->setError("username cannot be empty");

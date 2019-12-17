@@ -17,7 +17,9 @@ class BoardModel extends Model
         parent::__construct();
         $this->table = "Board";
     }
-
+    /*
+     * Insert the username and chip id into the Board database
+     */
     public function insert(string $username, string $chipId): bool{
         if(empty($username) || empty($chipId)){
             $this->setError("Username or Chip ID cannot be empty");
@@ -37,14 +39,16 @@ class BoardModel extends Model
         }
         return true;
     }
+    /*
+     * Update the location based on the chip id
+     */
     public function updateLocation(string $chipId, string $location): bool {
         if(strlen($location) === 0){
             $this->setError("Location cannot be empty.");
             return false;
         }
 
-        $username = $this->user->getUserName();
-        if(!$this->isUserTurns($username)){
+        if(!$this->isUserTurns($chipId)){
             $this->setError("It's not your turn yet.");
             return false;
         }
@@ -52,19 +56,17 @@ class BoardModel extends Model
         $gameModel = new GameModel();
         $chipModel = new ChipModel();
 
-        $playerColor = $gameModel->getColor($username);
+        $playerColor = $gameModel->getColor($chipId);
         $currentColor = $chipModel->getChipColor($chipId);
 
         // Verify the player's color before updating the location
         if(!strcmp($playerColor, $currentColor) == 0){
-            $this->setError("It is not your turn yet. ");
+            $this->setError("It is not your turn yet.");
             return false;
         }
 
-        /*
-         * Prevent the bug when the user clicks the repeat location, and it will not update the location column
-         * due to the same value. Just set the location column to null as long as if it exists.
-         */
+         //Prevent the bug when the user clicks the repeat location, and it will not update the location column
+         //due to the same value. Just set the location column to null as long as if it exists.
         if($this->hasLocation($chipId)){
             if(!$this->setLocationNull($chipId)){
                 return false;
@@ -84,12 +86,14 @@ class BoardModel extends Model
             return false;
         }
 
-        if(!$this->updateUserTurns($chipId, $username)){
+        if(!$this->updateUserTurns($chipId)){
             return false;
         }
         return true;
     }
-
+    /*
+     * Set null for location column
+     */
     public function setLocationNull($chipId): bool {
         $where = "chipId = ?";
         $set = "location";
@@ -104,7 +108,9 @@ class BoardModel extends Model
         }
         return true;
     }
-
+    /*
+     * Return true if location column contains any value
+     */
     public function hasLocation(string $chipId): bool {
         $where = "chipId = ?";
         $bindings = array($chipId);
@@ -113,7 +119,9 @@ class BoardModel extends Model
         }
         return false;
     }
-
+    /*
+     * Delete the row from Board database based on chip id
+     */
     public function deleteBoard($chipId): bool {
         if(empty($chipId)){
             $this->setError("Chip ID cannot be empty");
@@ -131,22 +139,41 @@ class BoardModel extends Model
         }
         return true;
     }
-
-    //Return true if the user's turn to make a move.
-    public function isUserTurns($username): bool{
-        $result = $this->get($username);
-        return empty($result) ? false : true;
+    /*
+     * Return true if the user has a permission to make a move.
+     */
+    public function isUserTurns($gameId): bool{
+        if (empty($gameId)) {
+            $this->setError("Game id cannot be empty");
+            return "";
+        }
+        $columns = "username";
+        $where = "chipId = ?";
+        $bindings = array($gameId);
+        $result = $this->database->select($this->table,$columns, $where, $bindings);
+        if($result->rowCount() > 0){
+            $result = $result->fetch();
+            if($result["username"] === $this->user->getUserName()){
+                return true;
+            }
+            else{
+                return false;
+            }
+        }
     }
 
-    public function updateUserTurns(string $chipId, string $username): bool{
-        if(empty($chipId)|| empty($username)){
-            $this->setError("Username or GameID cannot be empty.");
+    /*
+     * Update the username column in Board database regarding the player's turn
+     */
+    public function updateUserTurns(string $chipId): bool{
+        if(empty($chipId)){
+            $this->setError("GameID cannot be empty.");
             return false;
         }
         $gameModel = new GameModel();
         $where = "chipId = ?";
         $set = "username";
-        $bindings = array($gameModel->getChallengerUsername($username), $chipId);
+        $bindings = array($gameModel->getChallengerUsername($chipId), $chipId);
 
         if(!$this->database->update($this->table, $set, $where, $bindings)){
             $this->setError("Unable to update the username at this time.");
@@ -158,7 +185,9 @@ class BoardModel extends Model
         }
         return true;
     }
-
+    /*
+     * Return the current location
+     */
     public function getLocation(string $chipId): ?string{
         if(empty($chipId)){
             $this->setError("Chip ID cannot be empty.");
@@ -177,6 +206,9 @@ class BoardModel extends Model
         }
     }
 
+    /*
+     * Return current username
+     */
     public function getUsername(string $chipId): string{
         if(empty($chipId)){
             $this->setError("Username cannot be empty.");
@@ -192,9 +224,9 @@ class BoardModel extends Model
             return $result["username"];
         }
     }
-
-
-
+    /*
+     * Return all columns
+     */
     public function get(string $username): array{
         if (empty($username)) {
             $this->setError("username cannot be empty");

@@ -1,305 +1,87 @@
-# Bolzen Overview
-Bolzen is a powerful PHP skeleton web framework that is built using Symfony components and Twig for the template engine.
-The possibilities of what you can build with Bolzen is unlimited. Bolzen is capable of building both
-simple and complex web applications or websites. Bolzen follows the principle of Separation of Concern for building a
-software. Bolzen is layout in a way that allow you to deploy your application in no time. It is designed in a way that
-little to no configuration is required when deploying to various stages of development such as dev, staging and production.
-
-# Inspiration behind the name
-Bolzen is German for Bolt
-
-# How is Bolzen different from other web frameworks ?
-## Same
-* Built using Symfony Components
-* Built using Twig 2.0
-* Support MVC design patterns and other design patterns
-* OOP supported
-
-## The difference
-* Ultimately the goal is to create a web framework where you can just copy over from dev to production
-without major tweaking / configurations.
-
-* Design to work well all type of hosting whether it be VPS or shared hosting provider platforms.
-Existing web frameworks made the assumption that the user will have
-access to the shell,virtualHost file and among other which result in 
-massive configurations need to get them to work. Bolzen is design to work
-right out of the box. Developers only need to set the configuration within
-the config/ folder such as directory path,scheme, host, environment. Thus
-eliminate the need for shell or virtualHost access.
-
-* Include project directory in the path
-Currently project directory are not include in the route paths by default
-in most web frameworks. Bolzen include the project directory that was supplied
-in the config to all routes thus eliminate the need for the developer to include
-it in the requests
-
-# Framework layout
-    
-    ├── Project Directory
-        ├── config
-            ├── .env # create this file when you need to use database
-            ├── config.php
-        ├── core
-            ├── AccessControl
-            ├── Config
-            ├── Container
-            ├── Controller
-            ├── Database
-            ├── Framework
-            ├── Model
-            ├── Request
-            ├── RouteCollection
-            ├── Session
-            ├── Tables
-            ├── Twig
-            ├── User
-        ├── public
-            ├── assets
-                ├── css
-                ├── images
-                ├── js
-            ├── uploads #user uploads files are recommend to goes here
-            ├── .htaccess
-            ├── index.php
-        ├── src
-            ├── app.php
-            ├── container.php
-              
-        ├── template
-        ├── var
-        ├── vendor
-        .htaccess
-
-# Getting start
-* clone the repo git clone https://github.com/kemoycampbell/bolzen
-* go into config/ and configure your environment as desired
-* If you will be using the database, you must set enableDatabase to true and create a .env in the config/ with the following
-attributes.
-    ````
-    DB_PREFIX= #the database prefix example mysql
-    DB_USER= # the database username
-    DB_PASS=# the database password
-    DB_HOST= # the database host. Can be localhost or an ip
-    DB_NAME= # the name of the database.
-    ````
-* If you would like to use the default bolzen built in user object as well as the role object then you will need
-to import the tables that are located in the bolzen.sql
-
-* go to your url/projectDirectory/index and you should see a sample homepage
-
-Read below to see how the whole the sample home page was created.
-Feel free to delete the directory Home in both src and template and attempt to recreate it using
-the instructions below
-
-## The setup & structures
- * All of our codes will go into the src folder and our template(UI/ html codes) will go into the template folder.
-If you need to add a image,css or js then those goes into the public/assets/ in its respectively folders.
-* You may structure your src/ folders as you see fit. such as
-```
-├── src/
-    ├── Model
-    ├── Controller
-    ├── app.php
-    ├── container.php
-```
-OR
-```
-├── src/
-    ├── Staff
-        ├── Model
-        ├── Controller
-    ├── Supervisor
-        ├── Model
-        ├── Controller
-    ├── app.php
-    ├── container.php
-    
-```
-OR any other pattern you choose. You will notice that there are no "View" folder within both structures shown above. This is because
-all views goes in the template folder which you can structure as you see fit.
-
-# Creating a simple website / web application (NO Database)
-Before we make our project complicate with database and all fancy stuff, let us create a 
-simple project. First let us create a home page template called index.php. All template must end with .php.
-If all is well, you should have a structure similar to below
-
-```
-├── template/
-    ├── Home
-        ├── index.php
-```
-
-with the following code in index.php
-```
-<html lang="en">
-    <head>Index</head>
-    <body>
-        <h1> Hello world</h1>
-    </body>
-</html>
-
-```
-next we will need to create a controller that will be responsible for displaying this template.
-I will create a controller class called HomeController. I will be using the second src structure as shown
-above hence my src structure will now look like this
-```
-├── src/
-    ├── Home
-        ├── Controller
-            ├── HomeController.php     
-    ├── app.php
-    ├── container.php     
-```
-Our controller class will have the following code
-```php
-<?php
-namespace Bolzen\Src\Home\Controller;
-
-use Bolzen\Core\Controller\Controller;
-use Symfony\Component\HttpFoundation\Request;
-
-class HomeController extends Controller
-{
-    public function index(Request $request)
-    {
-        return $this->render($request);
-    }
-}
-
-```
-Finally, we need to add a route which will tell our app the path for the index(what the user type in the url),
-the controller responsible for displaying the page and the path to the template/Home/index. We can do this by go
-into src/app.php and add the path there. Add this line to your src/app.php. Your src/app.php should now look like this
-```php
-<?php
-use Symfony\Component\Routing\Route;
-use Bolzen\Core\RouteCollection\RouteCollection;
-
-$config = $container->get('config');
-$accessControl = $container->get('accessControl');
-$routes = new RouteCollection($config, $accessControl);
-
-####################################
-# Do not modify the line above
-# Your Routes goes here
-##################################
-
-$routes->add('Home/index', new Route("index", array(
-    '_controller'=>'\Bolzen\Src\Home\Controller\HomeController::index'
-    )));
-
-###############################
-# Do not modify below
-##############################
-return $routes->getRouteCollection();
-```
-A bit of explaination regarding each parameter, the first parameter is the template page path.
-We do not need to add template/ and the .php extension since this is already done by the framework.
-The second parameter is the url that goes in the browser and the third is the controller that
-is responsible to do some action when the url requested. If all is well, you should be able to visit
-http://localhost/projectDirectory/ and hello world should show up. Replace projectDirectory with your 
-directory name. This is the output of our progress so far
-![alt text](https://github.com/kemoycampbell/Bolzen/blob/master/index.png?raw=true "Bolzen")
-
-# Creating a website / web application with Database
-You will need to continue from "Creating a simple website / web application (NO Database)" section. In order
-to work with database, we will need to create a "Model" which will do some type of interaction with our database.
-I will go ahead and create a model class called HomeModel.php hence my src will now looks like
-```
-├── src/
-    ├── Home
-        ├── Controller
-            ├── HomeController.php
-        ├──Model
-            ├── HomeModel.php
-         
-    ├── app.php
-    ├── container.php     
-```
-
-Inside my model, I will just write some codes that list all the users in the account table hence my 
-HomeModel.php class will contain those codes
-
-```php
-<?php
-namespace Bolzen\Src\Home\Model;
-
-use Bolzen\Core\Model\Model;
-
-class HomeModel extends Model
-{
-    public function listUsers():array
-    {
-        //this is equivalent to select columns from  table
-        $table = "accounts";
-        $columns = "username";
-        return $this->database->select($table, $columns)->fetchAll();
-    }
-
-}
-```
-We will then need to update our controller to call this model thus we will need to modify our controller as follow
-```php
-<?php
-/**
- * @author Kemoy Campbell
- * Date: 1/2/19
- * Time: 6:16 PM
- */
-
-namespace Bolzen\Src\Home\Controller;
-
-use Bolzen\Core\Controller\Controller;
-use Bolzen\Src\Home\Model\HomeModel;
-use Symfony\Component\HttpFoundation\Request;
-
-class HomeController extends Controller
-{
-    public function index(Request $request)
-    {
-        //here we create a instance of our home model
-        $homeModel = new HomeModel();
-        
-        //we will then pass the list of users in a user array to the twig context
-        //so we can use it on the view
-        return $this->render($request, array("users"=>$homeModel->listUsers()));
-    }
-}
-```
-
-Finally we can update our view so it will show the users. We will be using the twig loop syntax. Update
-the template/Home/index.php with the following codes
-```twig
-<html lang="en">
-    <head>
-        <title>Index page</title>
-    </head>
-    <body>
-        <h1> Hello world</h1>
-        <h3>Here is a list of users</h3>
-        <ul>
-            {% for user in users %}
-                <li>{{user.username}}</li>
-            {% endfor %}
-        </ul>
-    </body>
-</html>
-```
-Refresh your browser and you should be able to see this
-![alt text](https://github.com/kemoycampbell/Bolzen/blob/master/index2.png?raw=true "Bolzen")
-
-## Contribution
-contributions are welcome so feel free to submit a pull request. I will merge the change it if fits
-Bolzen's vision and there are no conflict with the existence code bases.
+# Project: Multi-user interactive turn-based environment
+I created the Connect Four game for my web application project based on the multi-user interactive turn-based environment.
+ It will indicate the login and registration page when a user visits the landed site. 
+ A user will be required to verify the account by clicking a link through the email that contains the activation token. 
+ Once a user login, there will be an available public chatroom to send messages to all online players.
 
 
-## Current TODO:
-* Document more usages
-* Add composer support
-* Nginx configuration
+The rule of this game is each player will drop in one checker piece at a time. 
+The object of the game is to connect four of the player’s colored checker pieces, 
+red or blue, in a row based on horizontally, vertically, or diagonally. By default, 
+a proponent’s checker color will be red, and an opponent’s checker color will be blue. If a player is attempting to reload the page during the match game, then they will forfeit automatically. However, a player may make a request to start the game by clicking “start over” button.
+
+This project is using Bolzen, which is a powerful PHP skeleton web framework that is built using Symfony components and Twig for the template engine. 
+
+* Bolzen link can be found at https://github.com/kemoycampbell/bolzen
+
+
+# Modern browsers support using Server-Sent Event (SSE)
+A server-sent event is when a web page automatically gets updates from a server.
+
+This was also possible before, but the web page would have to ask if any updates were available. With server-sent events, the updates come automatically.
+
+* Google Chrome (6.0)
+* Firefox (6.0)
+* Safari (5.0)
+* Opera (11.5)
+
+<b>Note: Microsoft Edge is not supported by SSE.</b>
+
+Source: HTML5 Server-Sent Events - W3Schools
 
 
 
+# Features
+* Comes with a user registration and login forms.
+* Comes with the public and private chat rooms and stores the messages into the database.
+* Initialize the interactive board by using the combination of SVG and HTML.
+* Insert and fetch the data from phpMyAdmin by using prepared statements with PHP PDO.
+* Determine a player’s turn through the Ajax through jQuery that is used for interactive communication with a database.
+* Using HTML5 Server-Sent Events to get updates from a server, such as notifying a player that it is their turn to make a move.
+* Using Bolzen as a primary architecture for this project.
+* Sanitize and validate the data on the server side.
+* Built-in with the responsive design for desktop and mobile websites with the Bootstrap and Tailwind CSS framework.
+* Using the reCAPTCHA widget to protect my site from spam and abuse without a user interaction in the activation page.
+* Using CSRF token that is generated by the server-side application to prevent Cross-site Request Forgery (CSRF) attack.
 
-  
+# Where I Can Find All Online Players?
+On the left-side bar will list all online players based on the timestamp. 
+The player’s last activity must be under 5 minutes. 
+You may notice the player’s online status 
+that turns into the away due to idle, which is normal.
+
+# How Do I Send a Challenge to Another Player?
+In the desktop website, once you are on the lobby page and you will see the left-side 
+on the bar that shows all available players as long as the player’s last activity is 
+only under 5 minutes. For the mobile website, it’s similar to the desktop website. 
+You will need to click the circle that shows the initial of opponent's first and last names 
+and it will show up a dialog box/popup window to ask you if you want to send 
+a requested challenge to that opponent with two options: Yes and no. 
+Once you clicked “yes” button, it will proceed with the request; otherwise, 
+it will be cancelled.
+
+# How Do I Accept a Challenge from Another Player?
+The simple rule of this process is first come, first served. 
+You are expected to see a dialog box/pop window to view the request challenge from proponent.
+You will see accept and reject buttons inside of the dialog box window. 
+It gives you two options to respond to the request.
+
+# How Do I Start the Game?
+Once the opponent has accepted your requested challenge. 
+You and opponent will see a new dialog box/popup window with a button 
+that is ready to begin the game. Once you and opponent click the button, 
+and it will redirect to a different page that contains the board Connect Four 
+and private chat room. 
+A board has 42 spaces: 7 columns (vertical lines) and 6 rows (horizontal lines).
+
+# How Do I Start Over the Game?
+If you want to start over the game during the match, 
+you may click the top center of the board Connect Four, “Start Over” button to send 
+a request to an opponent. Once an opponent has approved your request, 
+you and the opponent will see the dialog box/popup window 
+that is ready to reload the page right after clicking the button. 
+Keep in mind, if you reload the page during the match game, you will be forfeit automatically
+due to the cheating and the board will be clear as fresh automatically when the 
+page is reloaded.
+
 

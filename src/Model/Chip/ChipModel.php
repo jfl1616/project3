@@ -5,7 +5,6 @@ namespace Bolzen\Src\Model\Chip;
 
 
 use Bolzen\Core\Model\Model;
-use Bolzen\Src\Model\Game\GameModel;
 
 class ChipModel extends Model
 {
@@ -16,7 +15,9 @@ class ChipModel extends Model
         parent::__construct();
         $this->table = "Chip";
     }
-
+    /*
+     * Insert the chip id and chip color into the Chip database
+     */
     public function insert(string $chipId): bool{
         if(empty($chipId)){
             $this->setError("Chip ID cannot be empty");
@@ -36,6 +37,9 @@ class ChipModel extends Model
         }
         return true;
     }
+    /*
+     * Update the chipColor column in the database.
+     */
     public function updateChipColor(string $chipId): bool {
         if(empty($chipId)){
             $this->setError("Chip ID cannot be empty");
@@ -58,12 +62,16 @@ class ChipModel extends Model
         }
         return true;
     }
-
+    /*
+     * Return the current chip color
+     */
     public function getChipColor(string $chipId): string{
         $result = $this->get($chipId);
         return empty($result) ? "" : $result["chipColor"];
     }
-
+    /*
+     * Return all columns
+     */
     public function get(string $chipId): array{
         if (empty($chipId)) {
             $this->setError("username cannot be empty");

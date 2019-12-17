@@ -83,7 +83,7 @@ $routes->addAjax(new Route("{token}/responseChallenge", array(
     '_controller' => '\Bolzen\Src\Controller\Lobby\LobbyController::responseChallenge'
 )));
 /*********************************
- * CHALLENGE
+ * FOURCONNECT GAME CHALLENGE
  **********************************/
 $routes->add("FourConnect/fourconnect", new Route('{token}/{gameId}/FourConnect', array(
     '_controller' => '\Bolzen\Src\Controller\FourConnect\FourConnectController::FourConnect'
@@ -91,7 +91,10 @@ $routes->add("FourConnect/fourconnect", new Route('{token}/{gameId}/FourConnect'
 $routes->add("FourConnect/fourconnect1", new Route('fourconnect1', array(
     '_controller' => '\Bolzen\Src\Controller\FourConnect\FourConnectController::FourConnect'
 )));
-$routes->addAjax(new Route("{token}/click", array(
+$routes->addAjax(new Route("{token}/{gameId}/requestedResetGame", array(
+    '_controller' => '\Bolzen\Src\Controller\FourConnect\FourConnectController::requestedResetGame'
+)));
+$routes->addAjax(new Route("{token}/{gameId}/click", array(
     '_controller' => '\Bolzen\Src\Controller\FourConnect\FourConnectController::click'
 )));
 $routes->addAjax(new Route("{token}/{gameId}/switchChipColor", array(
@@ -100,11 +103,20 @@ $routes->addAjax(new Route("{token}/{gameId}/switchChipColor", array(
 $routes->addAjax(new Route("{token}/{gameId}/updateGameResult", array(
     '_controller' => "\Bolzen\Src\Controller\FourConnect\FourConnectController::updateGameResult"
 )));
+$routes->addAjax(new Route("{token}/{gameId}/responseResetGame", array(
+    '_controller' => '\Bolzen\Src\Controller\FourConnect\FourConnectController::responseResetGame'
+)));
 $routes->addControllerOnly(new Route("{token}/{gameId}/playerMove", array(
     '_controller' => '\Bolzen\Src\Controller\FourConnect\FourConnectController::playerMove'
  )));
 $routes->addControllerOnly(new Route("{token}/{gameId}/gameStatus", array(
     '_controller' => '\Bolzen\Src\Controller\FourConnect\FourConnectController::gameStatus'
+)));
+$routes->addControllerOnly(new Route("{token}/{gameId}/checkResetGame", array(
+    '_controller' => '\Bolzen\Src\Controller\FourConnect\FourConnectController::checkResetGame'
+)));
+$routes->addControllerOnly(new Route("{token}/{gameId}/reloadResetGame", array(
+    '_controller' => '\Bolzen\Src\Controller\FourConnect\FourConnectController::reloadResetGame'
 )));
 
 ###############################

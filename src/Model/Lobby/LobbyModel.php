@@ -19,16 +19,22 @@ class LobbyModel extends Model
         $this->profileModel = new ProfileModel();
         $this->userLastActivityModel = new UserLastActivityModel();
     }
-
+    /*
+     * Redirect to the lobby page
+     */
     public function redirectToLobbyWithToken(){
         $this->accessControl->redirect($this->lobbyPath());
     }
-
+    /*
+     * Return the URL for the lobby path that comes with the CSRF Token that protects the CSRF attack.
+     */
     public function lobbyPath()
     {
         return $this->accessControl->getCSRFToken()."/lobby";
     }
-
+    /*
+     * Insert the data into ChatMessage database regarding the message.
+     */
     public function add(string $message, string $gameId): bool {
         if(empty($message) || empty($gameId)){
             $this->setError("Username, Message, and GameId parameters are required.");
@@ -50,6 +56,11 @@ class LobbyModel extends Model
         }
         return true;
     }
+    /*
+     * Return an array that comes with all registered and online users based on
+     * the timestamp that is under 5 minutes; otherwise, return an empty array
+     * if there isn't any online users.
+     */
     public function listOnlineUser(): array{
         $user = [];
         //Retrieve an array from ProfileModel class and loop through all registered users.
@@ -66,7 +77,11 @@ class LobbyModel extends Model
         }
         return $user;
     }
-
+    /*
+     * Return an array that comes with all messages with the specific game id and
+     * user's last activity (timestamp) must be under 5 minutes. Otherwise, it returns
+     * an empty array.
+     */
     public function listMsg(string $gameId):array {
         $where = "gameId=?";
         $bindings = array($gameId);

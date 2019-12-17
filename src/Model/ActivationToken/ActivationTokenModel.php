@@ -7,7 +7,6 @@ namespace Bolzen\Src\Model\ActivationToken;
 use Bolzen\Core\Model\Model;
 use Bolzen\Src\Model\Email\EmailModel;
 use Bolzen\Src\Model\Profile\ProfileModel;
-use Bolzen\Src\Model\Registration\RegistrationModel;
 
 class ActivationTokenModel extends Model
 {
@@ -21,6 +20,11 @@ class ActivationTokenModel extends Model
         $this->profileModel = new ProfileModel();
     }
 
+    /*
+     * Insert the account info into ActivationToken table that comes with the
+     * username, random token (SHA256), and duration in order to enforce the rule
+     * for the expiration date of the activation based on the token.
+     */
     public function add(string $username, \DateTime $duration):bool {
         if(empty($username) || empty($duration)){
             $this->setError("Username and duration are required.");
@@ -47,7 +51,10 @@ class ActivationTokenModel extends Model
         return true;
     }
 
-
+    /*
+     * Load a template. Create and render an array of object
+     * and send an email to the user to verify the account.
+     */
     public function send(string $email, string $username, string $firstName, \Twig_Environment $twig):bool{
         if(!$this->hasToken($this->token)){
             return false;
@@ -67,29 +74,32 @@ class ActivationTokenModel extends Model
         return true;
 
     }
-
+    /*
+     * Firstly, validate the reCAPTCHA before resending the email.
+     * Secondly, call send() function to resend the email with a new random token.
+     */
     public function resend(string $reCAPTCHA, string $email, \Twig_Environment $twig): bool{
         $secretKey = "6Lco-MEUAAAAAKXTp1dj_tPeiOck0mfSqGPDi0va";
 
-        // Verify the reCAPTCHA response
+        // Make sure the user has checked the reCAPTCHA box.
         if(!empty($recaptcha)){
             $this->setError("Please check on the reCAPTCHA box.");
             return false;
         }
 
-        // Verify the reCAPTCHA response
+        // Verify the reCAPTCHA response with a secret key.
         $verifyResponse = file_get_contents('https://www.google.com/recaptcha/api/siteverify?secret=' . $secretKey.
             '&response='.$_POST['g-recaptcha-response']);
 
         // Decode json data
         $responseData = json_decode($verifyResponse);
 
-        // If reCAPTCHA response is valid
+        // Return false if reCAPTCHA response is not successful.
         if(!$responseData->success){
-            $this->setError("Robot vertification failed, please try again.");
+            $this->setError("Robot verification failed, please try again.");
             return false;
         }
-
+        // Return false if email address is not existed in the database.
         if(!$this->profileModel->hasEmail($email)){
             $this->setError("The email address you entered does not exist in our system.");
             return false;
@@ -99,16 +109,16 @@ class ActivationTokenModel extends Model
         $firstName = $this->profileModel->getFirstName($username);
         $token = $this->getToken($username);
 
-        //Remove the token
+        //Remove the token from the database
         if(!$this->deleteToken($token)){
             return false;
         }
 
-        //Set the random token and expiration datetime
+        //Set expiration datetime in the next 30 minutes
         $duration = new \DateTime();
         $duration->modify("+30 minutes");
 
-        //Insert the new token
+        //Call add() function to insert the new random token and duration.
         if(!$this->add($username, $duration)){
             return false;
         }
@@ -124,8 +134,11 @@ class ActivationTokenModel extends Model
 
         return true;
     }
-
+    /*
+     * Verify the account as long as there is no errors.
+     */
     public function activate(string $token):bool{
+        //Make sure that token is valid.
         if(!$this->hasToken($token)){
             return false;
         }
@@ -137,6 +150,7 @@ class ActivationTokenModel extends Model
         $duration = new \DateTime($tokenRecord['duration']);
         $current = new \DateTime();
 
+        //Duration must be less than 30 minutes.
         if ($duration < $current) {
             $this->setError("The token has expired. Please click below button to resend a new token.");
             return false;
@@ -158,7 +172,9 @@ class ActivationTokenModel extends Model
         }
         return true;
     }
-
+    /*
+     * Return the username's current token.
+     */
     public function getToken($username=""){
         if(!empty($this->token)){
             return $this->token;
@@ -176,7 +192,9 @@ class ActivationTokenModel extends Model
         }
         return $this->token;
     }
-
+    /*
+     * Check if token is existed in the database.
+     */
     public function hasToken(string $token):bool {
         $where = "token=?";
         $bindings = array($token);
@@ -186,6 +204,9 @@ class ActivationTokenModel extends Model
         }
         return true;
     }
+    /*
+     * Delete the token from the database.
+     */
     public function deleteToken($token){
         if(!$this->hasToken($token)){
             return false;
@@ -198,5 +219,4 @@ class ActivationTokenModel extends Model
         }
         return true;
     }
-
 }

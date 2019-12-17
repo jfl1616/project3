@@ -11,6 +11,9 @@ class EmailModel extends Model
 {
     private $phpmailer;
 
+    /*
+     * Set up a Mail Host
+     */
     public function __construct()
     {
         parent::__construct();
@@ -24,7 +27,9 @@ class EmailModel extends Model
         $this->phpmailer->Username = getenv("EMAIL_USERNAME");
         $this->phpmailer->Password = getenv("EMAIL_PASSWORD");
     }
-
+    /*
+     * Prepare the email with the subject and message, then send it to the recipient.
+     */
     public function send(string $subject, string $message, string $to):bool {
         if(empty($subject) || empty($message) || empty($to)){
             $this->setError("Subject, message, and to are required.");
